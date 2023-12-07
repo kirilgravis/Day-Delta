@@ -1,5 +1,5 @@
 import streamlit as st
-import yfinance as yf
+# import yfinance as yf
 import pandas as pd
 import numpy as np
 
@@ -21,9 +21,9 @@ end_date = st.date_input('Select end date:', value=pd.to_datetime('2023-12-31'))
 
 data_frames = {}
 for symbol in selected_symbols:
-    data = yf.download(symbol, start=start_date, end=end_date)
-    # data = pd.DataFrame({'Adj Close': np.random.randint(50, 200, size=11)},
-    #                     index=range(1, 12))
+    # data = yf.download(symbol, start=start_date, end=end_date)
+    data = pd.DataFrame({'Adj Close': np.random.randint(50, 200, size=11)},
+                        index=range(1, 12))
     data = calculate_adjusted_ratio(data, n)
     data_frames[symbol] = data
 
