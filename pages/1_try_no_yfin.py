@@ -2,7 +2,7 @@
 # # import yfinance as yf
 # import pandas as pd
 # import numpy as np
-# 
+#
 #
 # def calculate_adjusted_ratio(data, n):
 #     data['Return'] = data['Adj Close'] / data['Adj Close'].shift(n)
