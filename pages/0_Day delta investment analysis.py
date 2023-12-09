@@ -63,6 +63,7 @@ data_frames = {}
 for symbol in selected_symbols:
     data = pd.read_csv(f'./data/{symbol}.csv', index_col='Date')
     data.index = pd.to_datetime(data.index)
+    data = data[(data.index.date >= start_date) & (data.index.date <= end_date)]
     data_frames[symbol] = data
 
 for symbol in selected_symbols:
