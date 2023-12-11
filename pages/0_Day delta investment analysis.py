@@ -1,33 +1,6 @@
 import streamlit as st
 import pandas as pd
-
-
-def data_transformation(data, forward_days, look_back_days):
-    data = data[['Adj Close']]
-    column_name = f"Future {forward_days} days return"
-    data[column_name] = 0  # Initialize Future {forward_days} days return column with zeros
-    for i in range(len(data)):
-        if i + forward_days < len(data):
-            if data['Adj Close'][i] < data['Adj Close'][i - look_back_days]:
-                data.at[data.index[i], column_name] = ((data['Adj Close'][i] / data['Adj Close'][i + forward_days]) - 1)
-            elif data['Adj Close'][i] > data['Adj Close'][i - look_back_days]:
-                data.at[data.index[i], column_name] = ((data['Adj Close'][i + forward_days] / data['Adj Close'][i]) - 1)
-    data['Cumulative return'] = (data[column_name] + 1).cumprod() - 1
-    data[column_name] *= 100
-    return data
-
-
-def get_summary(df, column_name):
-    summary = {'Total wins: ': len(df[df[column_name] > 0]),
-               'Total losses: ': len(df[df[column_name] < 0]),
-               'Ratio: ': f'{round(len(df[df[column_name] > 0]) / len(df), 3)*100}%',
-               'Average: ': df[column_name].mean(),
-               'Median: ': df[column_name].median(),
-               'Biggest DrawDown: ': df[column_name].min(),
-               'Biggest Win: ': df[column_name].max()
-               }
-    summary_df = pd.DataFrame(list(summary.items()), columns=['Metric', 'Value']).set_index('Metric')
-    return summary_df
+from functions import *
 
 
 with st.sidebar:
@@ -58,6 +31,7 @@ with col1:
 
 with col2:
     forward_days = st.slider('Number of days to look forward', min_value=1, max_value=30, value=1)
+    column_name = f"Future {forward_days} days return"
 
 data_frames = {}
 for symbol in selected_symbols:
@@ -66,8 +40,12 @@ for symbol in selected_symbols:
     data = data[(data.index.date >= start_date) & (data.index.date <= end_date)]
     data_frames[symbol] = data
 
+# Data transformation with parameters
 for symbol in selected_symbols:
     data_frames[symbol] = data_transformation(data_frames[symbol], forward_days, look_back_days)
+    data_frames[symbol] = remove_intersections(data_frames[symbol], column_name, look_back_days, forward_days)
+    data_frames[symbol]['Cumulative return'] = (data_frames[symbol][column_name] + 1).cumprod() - 1
+    data_frames[symbol][column_name] *= 100
 
 count = 0
 for symbol in selected_symbols:
@@ -92,7 +70,6 @@ for symbol in selected_symbols:
             st.line_chart(data_frames[symbol][f"Future {forward_days} days return"])
 
         with part3:
-            column_name = f"Future {forward_days} days return"
             st.write(get_summary(data_frames[symbol], column_name))
 
         with part4:
